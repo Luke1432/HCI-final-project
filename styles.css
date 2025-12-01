@@ -306,3 +306,13 @@ button {
   color: white;
   border: none;
 }
+
+#calendar-grid.weekly-view {
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: 1fr;
+}
+
+#calendar-grid.daily-view {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}

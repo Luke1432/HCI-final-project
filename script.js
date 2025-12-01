@@ -3,6 +3,43 @@ const calendarGrid = document.getElementById("calendar-grid");
 const monthSelect = document.getElementById("month-select");
 const monthUp = document.getElementById("month-up");
 const monthDown = document.getElementById("month-down");
+let currentView = "monthly";
+const monthDownButton = document.getElementById("month-down");
+const monthUpButton = document.getElementById("month-up");
+
+monthDownButton.addEventListener("click", () => {
+  if (currentView === "daily") {
+    monthSelect.value = selectedDate.toISOString().slice(0, 10);
+    renderDailyView();
+  } else if (currentView === "weekly") {
+    const startOfWeek = new Date(selectedDate);
+    selectedDate = new Date(startOfWeek);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    monthSelect.value = `${startOfWeek.toISOString().slice(0, 10)} - ${endOfWeek.toISOString().slice(0, 10)}`;
+    renderWeeklyView();
+  } else if (currentView === "monthly") {
+    monthSelect.value = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}`;
+    renderMonthlyView();
+  }
+});
+
+monthUpButton.addEventListener("click", () => {
+  if (currentView === "daily") {
+    monthSelect.value = selectedDate.toISOString().slice(0, 10);
+    renderDailyView();
+  } else if (currentView === "weekly") {
+    const startOfWeek = new Date(selectedDate);
+    selectedDate = new Date(startOfWeek);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    monthSelect.value = `${startOfWeek.toISOString().slice(0, 10)} - ${endOfWeek.toISOString().slice(0, 10)}`; // Update week format
+    renderWeeklyView();
+  } else if (currentView === "monthly") {
+    monthSelect.value = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}`; // Update month format
+    renderMonthlyView();
+  }
+});
 
 monthSelect.addEventListener("change", () => {
   selectedDate = new Date(monthSelect.value);
@@ -10,16 +47,209 @@ monthSelect.addEventListener("change", () => {
 });
 
 monthUp.addEventListener("click", () => {
-  selectedDate.setMonth(selectedDate.getMonth() + 1);
-  monthSelect.value = selectedDate.toISOString().slice(0, 10);
-  renderCalendar();
+  if (currentView === "daily") {
+    selectedDate.setDate(selectedDate.getDate() + 1);
+    monthSelect.value = selectedDate.toISOString().slice(0, 10);
+    renderDailyView();
+  } else if (currentView === "weekly") {
+    selectedDate.setDate(selectedDate.getDate() + 7);
+    const startOfWeek = new Date(selectedDate);
+    startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay());
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    monthSelect.value = `${startOfWeek.toISOString().slice(0, 10)} - ${endOfWeek.toISOString().slice(0, 10)}`;
+    renderWeeklyView();
+  } else if (currentView === "monthly") {
+    selectedDate.setMonth(selectedDate.getMonth() + 1);
+    monthSelect.value = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}`;
+    renderMonthlyView();
+  }
 });
 
 monthDown.addEventListener("click", () => {
-  selectedDate.setMonth(selectedDate.getMonth() - 1);
-  monthSelect.value = selectedDate.toISOString().slice(0, 10);
-  renderCalendar();
+  if (currentView === "daily") {
+    selectedDate.setDate(selectedDate.getDate() - 1);
+    monthSelect.value = selectedDate.toISOString().slice(0, 10);
+    renderDailyView();
+  } else if (currentView === "weekly") {
+    selectedDate.setDate(selectedDate.getDate() - 7);
+    const startOfWeek = new Date(selectedDate);
+    startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay());
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    monthSelect.value = `${startOfWeek.toISOString().slice(0, 10)} - ${endOfWeek.toISOString().slice(0, 10)}`;
+    renderWeeklyView();
+  } else if (currentView === "monthly") {
+    selectedDate.setMonth(selectedDate.getMonth() - 1);
+    monthSelect.value = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}`;
+    renderMonthlyView();
+  }
 });
+
+const viewWeeklyButton = document.getElementById("view-weekly");
+const viewDailyButton = document.getElementById("view-daily");
+const viewMonthlyButton = document.getElementById("view-monthly");
+
+viewMonthlyButton.addEventListener("click", () => {
+  currentView = "monthly";
+  renderMonthlyView();
+});
+
+viewWeeklyButton.addEventListener("click", () => {
+  currentView = "weekly";
+  renderWeeklyView();
+});
+
+viewDailyButton.addEventListener("click", () => {
+  currentView = "daily";
+  renderDailyView();
+});
+
+function renderDailyView() {
+  calendarGrid.className = "daily-view";
+  calendarGrid.innerHTML = "";
+
+  const dayCell = document.createElement("div");
+  dayCell.classList.add("calendar-day");
+  dayCell.innerHTML = `<strong>${selectedDate.getDate()}</strong>`;
+
+  const tasksList = document.createElement("div");
+  tasksList.classList.add("tasks-list");
+  dayCell.appendChild(tasksList);
+
+  const tasksOnThisDay = tasks.filter((task) => {
+    const taskStart = new Date(task.startTime);
+    const taskEnd = new Date(task.endTime);
+
+    return (
+      taskStart <= selectedDate.setHours(23, 59, 59, 999) &&
+      taskEnd >= selectedDate.setHours(0, 0, 0, 0)
+    );
+  });
+
+  tasksOnThisDay.forEach((task) => {
+    const taskElement = document.createElement("div");
+    taskElement.classList.add("calendar-task");
+    taskElement.classList.add(`${task.priority}`);
+    taskElement.innerHTML = `<p>${task.name}</p>
+      <p>${new Date(task.startTime).toLocaleTimeString()} - ${new Date(
+      task.endTime
+    ).toLocaleTimeString()}</p>`;
+    tasksList.appendChild(taskElement);
+  });
+
+  calendarGrid.appendChild(dayCell);
+
+  monthSelect.type = "date";
+  monthSelect.value = selectedDate.toISOString().slice(0, 10);
+}
+
+function renderWeeklyView() {
+  calendarGrid.className = "weekly-view";
+  calendarGrid.innerHTML = "";
+
+  const startOfWeek = new Date(selectedDate);
+  startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay());
+
+  for (let i = 0; i < 7; i++) {
+    const currentDay = new Date(startOfWeek);
+    currentDay.setDate(startOfWeek.getDate() + i);
+
+    const dayCell = document.createElement("div");
+    dayCell.classList.add("calendar-day");
+    dayCell.innerHTML = `<strong>${currentDay.getDate()}</strong>`;
+
+    const tasksList = document.createElement("div");
+    tasksList.classList.add("tasks-list");
+    dayCell.appendChild(tasksList);
+
+    const tasksOnThisDay = tasks.filter((task) => {
+      const taskStart = new Date(task.startTime);
+      const taskEnd = new Date(task.endTime);
+
+      return (
+        taskStart <= currentDay.setHours(23, 59, 59, 999) &&
+        taskEnd >= currentDay.setHours(0, 0, 0, 0)
+      );
+    });
+
+    tasksOnThisDay.forEach((task) => {
+      const taskElement = document.createElement("div");
+      taskElement.classList.add("calendar-task");
+      taskElement.classList.add(`${task.priority}`);
+      taskElement.innerHTML = `<p>${task.name}</p>
+        <p>${new Date(task.startTime).toLocaleTimeString()} - ${new Date(
+        task.endTime
+      ).toLocaleTimeString()}</p>`;
+      tasksList.appendChild(taskElement);
+    });
+
+    calendarGrid.appendChild(dayCell);
+  }
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+  monthSelect.type = "text";
+  monthSelect.value = `${startOfWeek.toISOString().slice(0, 10)} - ${endOfWeek
+    .toISOString()
+    .slice(0, 10)}`;
+}
+
+function renderMonthlyView() {
+  calendarGrid.className = "monthly-view";
+  calendarGrid.innerHTML = "";
+
+  const startOfMonth = new Date(selectedDate);
+  startOfMonth.setDate(1);
+
+  const endOfMonth = new Date(selectedDate);
+  endOfMonth.setMonth(selectedDate.getMonth() + 1);
+  endOfMonth.setDate(0);
+
+  const daysInMonth = endOfMonth.getDate();
+
+  for (let i = 1; i <= daysInMonth; i++) {
+    const currentDay = new Date(startOfMonth);
+    currentDay.setDate(i);
+
+    const dayCell = document.createElement("div");
+    dayCell.classList.add("calendar-day");
+    dayCell.innerHTML = `<strong>${currentDay.getDate()}</strong>`;
+
+    const tasksList = document.createElement("div");
+    tasksList.classList.add("tasks-list");
+    dayCell.appendChild(tasksList);
+
+    const tasksOnThisDay = tasks.filter((task) => {
+      const taskStart = new Date(task.startTime);
+      const taskEnd = new Date(task.endTime);
+
+      return (
+        taskStart <= currentDay.setHours(23, 59, 59, 999) &&
+        taskEnd >= currentDay.setHours(0, 0, 0, 0)
+      );
+    });
+
+    tasksOnThisDay.forEach((task) => {
+      const taskElement = document.createElement("div");
+      taskElement.classList.add("calendar-task");
+      taskElement.classList.add(`${task.priority}`);
+      taskElement.innerHTML = `<p>${task.name}</p>
+        <p>${new Date(task.startTime).toLocaleTimeString()} - ${new Date(
+        task.endTime
+      ).toLocaleTimeString()}</p>`;
+      tasksList.appendChild(taskElement);
+    });
+
+    calendarGrid.appendChild(dayCell);
+  }
+
+  monthSelect.type = "month";
+  monthSelect.value = `${selectedDate.getFullYear()}-${String(
+    selectedDate.getMonth() + 1
+  ).padStart(2, "0")}`;
+}
 
 function renderCalendar() {
   calendarGrid.innerHTML = "";
@@ -170,7 +400,7 @@ let AIScript = [
   {
     user: "AI",
     content:
-      "This week you have a midterm, exam, seminar, statistics homework, and a meting with your academic advisor",
+      "This week you have a midterm, exam, seminar, statistics homework, and a meeting with your academic advisor",
   },
   {
     user: "AI",
