@@ -1,48 +1,92 @@
 <!DOCTYPE html>
 
 <head>
-    <title>AI Scheduler</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
-    
-    <script src="https://unpkg.com/chrono-node@2.9.0/chrono.min.js"></script>
-    
-    <script src="script.js" defer></script>
+  <title>AI Scheduler</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <script src="https://unpkg.com/chrono-node@2.9.0/chrono.min.js"></script>
+
+  <script src="script.js" defer></script>
 </head>
 
-
 <body>
-    <header>
-        <h1>AI-Powered Scheduler</h1>
-    </header>
-    <main>
-        <section id="task-input">
-            <h2>Add New Task</h2>
-            <form id="task-form">
-                <label for="task-name">Task Description:</label>
-                <input type="text" id="task-name" name="task-name"
-                    placeholder="e.g., Finish the report by Friday at 3pm" required>
+  <header>
+    <h1>AI-Powered Scheduler</h1>
+    <nav>
+      <button id="mail-button p">Mail</button>
+    </nav>
+  </header>
+  <main>
+    <section id="upcoming">
+      <h2>Upcoming Tasks</h2>
+      <div id="task-list"></div>
+    </section>
+    <section id="calendar">
+      <div id="calendar-header">
+        <div>
+          <button id="month-down"><</button>
+          <input type="date" id="month-select" value="2025-10" />
+          <button id="month-up">></button>
+        </div>
+        <button id="add-task-button" class="add-task-btn">Add Tasks +</button>
+      </div>
+      <div id="calendar-grid"></div>
+    </section>
+    <section id="chat">
+      <h2>Chat</h2>
 
-                <label for="task-priority">Priority:</label>
-                <select id="task-priority" name="task-priority">
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                </select>
+      <div id="chat-messages"></div>
+      <div id="chat-input">
+        <textarea
+          name=""
+          id="message-box"
+          placeholder="Type your message..."
+        ></textarea>
+        <button id="send-button">Send</button>
+      </div>
+    </section>
+  </main>
 
-                <button type="submit">Add Task</button>
-            </form>
-        </section>
+  <div id="task-popover" class="popover">
+    <div class="popover-content">
+      <span class="close-btn">x</span>
+      <h2>Add New Task</h2>
+      <form id="task-form">
+        <label for="task-name">Name</label>
+        <input
+          type="text"
+          id="task-name"
+          name="task-name"
+          placeholder="Task Name"
+          required
+        />
 
-        <section id="calendar">
-            <h2>Task Calendar</h2>
-            <label for="month-select">Select Month:</label>
-            <input type="month" id="month-select" value="2025-10">
-            <div id="calendar-grid"></div>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2024 AI Scheduler</p>
-    </footer>
+        <label for="task-name">Description:</label>
+        <textarea
+          type="text"
+          id="task-description"
+          name="task-description"
+          placeholder="Describe the your task."
+          required
+        ></textarea>
+
+        <label for="task-end">Start Time:</label>
+        <input type="datetime-local" name="" id="task-start" />
+
+        <label for="task-end">End Time:</label>
+        <input type="datetime-local" name="" id="task-end" />
+
+        <label for="task-priority">Priority:</label>
+        <select id="task-priority" name="task-priority">
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+
+        <button type="submit">Add Task</button>
+      </form>
+    </div>
+  </div>
 </body>
