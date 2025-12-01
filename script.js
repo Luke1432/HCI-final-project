@@ -161,17 +161,41 @@ const chatMessages = document.getElementById("chat-messages");
 const sendButton = document.getElementById("send-button");
 const messageBox = document.getElementById("message-box");
 
+let AIScript = [
+  {
+    user: "AI",
+    content:
+      "You have some free time on wednesday would you like me to schedule a walk to calm down your busy week?",
+  },
+  {
+    user: "AI",
+    content:
+      "This week you have a midterm, exam, seminar, statistics homework, and a meting with your academic advisor",
+  },
+  {
+    user: "AI",
+    content: "I will add your task right away",
+  },
+];
+
 sendButton.addEventListener("click", () => {
   messages.push({
     user: "",
     content: messageBox.value,
   });
 
-  messages.push({
-    user: "AI",
-    content:
-      "This is only an example since this feature hasn't been implemented yet",
-  });
+  let nextMessage = AIScript.pop();
+
+  if (nextMessage != null) {
+    messages.push(nextMessage);
+  } else {
+    messages.push({
+      user: "AI",
+      content:
+        "This is only an example and i've run out of prescribed responses",
+    });
+  }
+
   messageBox.value = "";
   renderMessages();
   chatMessages.scrollTop = chatMessages.scrollHeight;
