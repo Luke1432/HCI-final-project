@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Study Planner – Task & Study Suggestion Prototype</title>
+    <link rel="stylesheet" href="task-prototype.css">
+    <script src="task-prototype.js" defer></script>
+</head>
+<body>
+    <main class="app">
+        <header class="app__header">
+            <h1>AI Study Planner</h1>
+            <p class="app__subtitle">
+                Prototype: add a task and generate an AI-style study plan.
+            </p>
+        </header>
+
+        <section class="card">
+            <h2>Add a new task</h2>
+
+            <div class="form-row">
+                <label for="taskName">Task name</label>
+                <input id="taskName" type="text" placeholder="e.g., HCI Essay Draft">
+            </div>
+
+            <div class="form-row">
+                <label for="dueDate">Due date</label>
+                <input id="dueDate" type="date">
+            </div>
+
+            <div class="form-row">
+                <label for="priority">Priority</label>
+                <select id="priority">
+                    <option value="high">High</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label for="estimateHours">Estimated total study time (hours)</label>
+                <input id="estimateHours" type="number" min="1" max="20" value="3">
+            </div>
+
+            <button id="generateBtn" class="primary-btn">
+                Generate Study Plan
+            </button>
+
+            <p id="errorMsg" class="error-msg" aria-live="polite"></p>
+        </section>
+
+        <section id="resultSection" class="card card--results hidden">
+            <h2>Suggested Study Plan</h2>
+            <p id="summaryText"></p>
+            <ul id="suggestionsList" class="suggestions-list"></ul>
+
+            <p class="disclaimer">
+                Note: This is a prototype. Suggestions are generated with simple rules,
+                not real AI.
+            </p>
+        </section>
+    </main>
+</body>
+</html>
+
