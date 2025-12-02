@@ -442,3 +442,12 @@ button {
 .calendar-day.today strong {
   color: var(--accent, #5b75ff);
 }
+
+.calendar-task,
+.task,
+.view-btn,
+.add-task-btn,
+.detail-actions button,
+#test-notifications-button {
+  cursor: pointer;
+}
