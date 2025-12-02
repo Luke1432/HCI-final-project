@@ -5,6 +5,8 @@ const monthDown = document.getElementById("month-down");
 const viewWeeklyButton = document.getElementById("view-weekly");
 const viewDailyButton = document.getElementById("view-daily");
 const viewMonthlyButton = document.getElementById("view-monthly");
+const testNotificationsButton = document.getElementById("test-notifications-button");
+
 
 let currentView = "monthly";
 
@@ -235,6 +237,125 @@ let selectedDate = new Date();
 let isEditing = false;
 let editingTaskId = null;
 let detailTaskId = null;
+let notificationContainer = null;
+let notificationIntervalId = null;
+
+function createNotificationContainer() {
+  notificationContainer = document.createElement("div");
+  notificationContainer.id = "notification-container";
+  notificationContainer.style.position = "fixed";
+  notificationContainer.style.bottom = "20px";
+  notificationContainer.style.right = "20px";
+  notificationContainer.style.maxWidth = "320px";
+  notificationContainer.style.zIndex = "1000";
+  notificationContainer.style.display = "flex";
+  notificationContainer.style.flexDirection = "column";
+  notificationContainer.style.gap = "8px";
+  document.body.appendChild(notificationContainer);
+}
+
+function checkUpcomingTaskNotifications() {
+  const now = new Date();
+  const windowMs = 5 * 60 * 1000;
+
+  tasks.forEach((task) => {
+    if (task.hasBeenNotified) return;
+
+    const start = new Date(task.startTime);
+    const diff = start.getTime() - now.getTime();
+
+    if (diff > 0 && diff <= windowMs) {
+      const timeLabel = start.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const message = `${task.name} starts at ${timeLabel}`;
+
+      showInAppNotification(message);
+
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("Upcoming task", {
+          body: message,
+        });
+      }
+
+      task.hasBeenNotified = true;
+    }
+  });
+}
+
+function showInAppNotification(message) {
+  if (!notificationContainer) return;
+
+  const card = document.createElement("div");
+  card.classList.add("notification-card");
+  card.style.backgroundColor = "var(--card-bg, #ffffff)";
+  card.style.borderRadius = "12px";
+  card.style.padding = "12px 16px";
+  card.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+  card.style.fontSize = "0.9rem";
+
+  card.innerHTML = `
+    <strong>Upcoming task</strong>
+    <p>${message}</p>
+  `;
+
+  notificationContainer.appendChild(card);
+
+  setTimeout(() => {
+    card.remove();
+  }, 8000);
+}
+
+function initNotifications() {
+  createNotificationContainer();
+
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission().catch(() => {});
+  }
+
+  checkUpcomingTaskNotifications();
+
+  if (notificationIntervalId !== null) {
+    clearInterval(notificationIntervalId);
+  }
+  notificationIntervalId = setInterval(checkUpcomingTaskNotifications, 60000);
+}
+
+if (testNotificationsButton) {
+  testNotificationsButton.addEventListener("click", () => {
+    if (!notificationContainer) {
+      createNotificationContainer();
+    }
+
+    showInAppNotification("This is a notification from AI scheduler app. ");
+
+    if ("Notification" in window) {
+      if (Notification.permission === "granted") {
+        new Notification("AI Scheduler App", {
+          body: "This is how a browser notification will look.",
+        });
+      } else if (Notification.permission === "default") {
+        Notification.requestPermission().then((result) => {
+          if (result === "granted") {
+            new Notification("Test notification", {
+              body: "This is how a browser notification will look.",
+            });
+          }
+        });
+      }
+    }
+  });
+}
+
+function isSameDay(date1, date2) {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+}
+
 
 function createCalendarTaskElement(task, timeLabel) {
   const taskElement = document.createElement("div");
@@ -264,6 +385,11 @@ function renderDailyView() {
 
   const dayCell = document.createElement("div");
   dayCell.classList.add("calendar-day");
+  
+  if (isSameDay(selectedDate, new Date())) {
+    dayCell.classList.add("today");
+  }  
+
   dayCell.innerHTML = `<strong>${selectedDate.getDate()}</strong>`;
 
   const tasksList = document.createElement("div");
@@ -307,6 +433,11 @@ function renderWeeklyView() {
 
     const dayCell = document.createElement("div");
     dayCell.classList.add("calendar-day");
+
+    if (isSameDay(currentDay, new Date())) {
+      dayCell.classList.add("today");
+    }
+
     dayCell.innerHTML = `<strong>${currentDay.getDate()}</strong>`;
 
     const tasksList = document.createElement("div");
@@ -362,6 +493,13 @@ function renderMonthlyView() {
 
     const dayCell = document.createElement("div");
     dayCell.classList.add("calendar-day");
+
+    if (isSameDay(currentDay, new Date())) {
+      dayCell.classList.add("today");
+    }
+
+
+
     dayCell.innerHTML = `<strong>${currentDay.getDate()}</strong>`;
 
     const tasksList = document.createElement("div");
@@ -409,19 +547,25 @@ function renderCalendar() {
   ).getDate();
 
   for (let day = 1; day <= daysInMonth; day++) {
-    const dayCell = document.createElement("div");
-    dayCell.classList.add("calendar-day");
-    dayCell.innerHTML = `<strong>${day}</strong>`;
-
-    const tasksList = document.createElement("div");
-    tasksList.classList.add("tasks-list");
-    dayCell.appendChild(tasksList);
-
     const currentDay = new Date(
       selectedDate.getFullYear(),
       selectedDate.getMonth(),
       day
     );
+
+    const dayCell = document.createElement("div");
+    dayCell.classList.add("calendar-day");
+
+    // 🔹 Add highlight if this is today
+    if (isSameDay(currentDay, new Date())) {
+      dayCell.classList.add("today");
+    }
+
+    dayCell.innerHTML = `<strong>${day}</strong>`;
+
+    const tasksList = document.createElement("div");
+    tasksList.classList.add("tasks-list");
+    dayCell.appendChild(tasksList);
 
     const tasksOnThisDay = tasks.filter((task) => {
       const taskStart = new Date(task.startTime);
@@ -451,6 +595,7 @@ function renderCalendar() {
     calendarGrid.appendChild(dayCell);
   }
 }
+
 
 monthSelect.addEventListener("change", () => {
   selectedDate = new Date(monthSelect.value);
@@ -785,6 +930,7 @@ function addTask(task) {
   });
   renderCalendar();
   renderUpcoming();
+  checkUpcomingTaskNotifications();
 }
 
 function deleteTask(taskId) {
@@ -815,10 +961,31 @@ function startEditingTask(taskId) {
   openPopover();
 }
 
+function updateCurrentDateTime() {
+  const now = new Date();
+  const element = document.getElementById("current-datetime");
+  if (!element) return;
+
+  element.textContent = now.toLocaleString([], {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}
+
+
 function main() {
   renderMessages();
-  renderCalendar();
+  renderMonthlyView();
   renderUpcoming();
+  initNotifications();
+
+  updateCurrentDateTime();
+  setInterval(updateCurrentDateTime, 1000);
 }
 
 main();

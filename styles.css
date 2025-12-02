@@ -425,3 +425,20 @@ button {
   cursor: pointer;
   float: right;
 }
+
+.current-datetime {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  opacity: 0.8;
+}
+
+.calendar-day.today {
+  border: 2px solid var(--accent, #5b75ff);
+  border-radius: 8px;
+  background-color: rgba(91, 117, 255, 0.15);
+}
+
+.calendar-day.today strong {
+  color: var(--accent, #5b75ff);
+}

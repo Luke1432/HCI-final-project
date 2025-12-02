@@ -16,9 +16,13 @@
     <h1>AI-Powered Scheduler</h1>
     <nav>
       <button id="mail-button p">Mail</button>
+      <button id="test-notifications-button">Test notifications</button>
     </nav>
   </header>
   <main>
+    <section id="clock">
+      <div id="current-datetime" class="current-datetime"></div>
+    </section>
     <section id="upcoming">
       <h2>Upcoming Tasks</h2>
       <div id="task-list"></div>
@@ -89,7 +93,6 @@
           <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
-
         <button type="submit">Add Task</button>
       </form>
     </div>
