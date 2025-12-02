@@ -370,3 +370,58 @@ button {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
 }
+
+.detail-popover {
+  position: fixed;
+  inset: 0; /* top:0; right:0; bottom:0; left:0 */
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 2000;
+}
+
+.detail-popover.show {
+  display: flex;
+}
+
+.detail-popover .popover-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 320px;
+  width: 100%;
+}
+
+.detail-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.detail-actions button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+#detail-edit {
+  background: #4a6fff;
+  color: #fff;
+}
+
+#detail-delete {
+  background: #f26b6b;
+  color: #fff;
+}
+
+.detail-close-btn {
+  border: none;
+  background: transparent;
+  font-size: 1.2rem;
+  cursor: pointer;
+  float: right;
+}
