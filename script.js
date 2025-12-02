@@ -6,6 +6,42 @@ const monthDown = document.getElementById("month-down");
 let currentView = "monthly";
 const monthDownButton = document.getElementById("month-down");
 const monthUpButton = document.getElementById("month-up");
+const confirmPopover = document.getElementById("confirm-popover");
+const confirmText = document.getElementById("confirm-text");
+const confirmYes = document.getElementById("confirm-yes");
+const confirmNo = document.getElementById("confirm-no");
+
+let pendingDeleteId = null;
+
+function openConfirm(text, taskId) {
+  confirmText.textContent = text;
+  pendingDeleteId = taskId;
+  confirmPopover.classList.add("show");
+}
+
+function closeConfirm() {
+  confirmPopover.classList.remove("show");
+  pendingDeleteId = null;
+}
+
+confirmNo.addEventListener("click", closeConfirm);
+
+confirmYes.addEventListener("click", () => {
+  if (pendingDeleteId) {
+    tasks = tasks.filter(t => t.id !== pendingDeleteId);
+    renderCalendar();
+    renderUpcoming();
+  }
+  closeConfirm();
+});
+
+
+function generateTaskId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+let isEditing = false;
+let editingTaskId = null;
 
 monthDownButton.addEventListener("click", () => {
   if (currentView === "daily") {
@@ -16,10 +52,14 @@ monthDownButton.addEventListener("click", () => {
     selectedDate = new Date(startOfWeek);
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
-    monthSelect.value = `${startOfWeek.toISOString().slice(0, 10)} - ${endOfWeek.toISOString().slice(0, 10)}`;
+    monthSelect.value = `${startOfWeek.toISOString().slice(0, 10)} - ${endOfWeek
+      .toISOString()
+      .slice(0, 10)}`;
     renderWeeklyView();
   } else if (currentView === "monthly") {
-    monthSelect.value = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}`;
+    monthSelect.value = `${selectedDate.getFullYear()}-${String(
+      selectedDate.getMonth() + 1
+    ).padStart(2, "0")}`;
     renderMonthlyView();
   }
 });
@@ -33,10 +73,14 @@ monthUpButton.addEventListener("click", () => {
     selectedDate = new Date(startOfWeek);
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
-    monthSelect.value = `${startOfWeek.toISOString().slice(0, 10)} - ${endOfWeek.toISOString().slice(0, 10)}`; // Update week format
+    monthSelect.value = `${startOfWeek.toISOString().slice(0, 10)} - ${endOfWeek
+      .toISOString()
+      .slice(0, 10)}`;
     renderWeeklyView();
   } else if (currentView === "monthly") {
-    monthSelect.value = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}`; // Update month format
+    monthSelect.value = `${selectedDate.getFullYear()}-${String(
+      selectedDate.getMonth() + 1
+    ).padStart(2, "0")}`;
     renderMonthlyView();
   }
 });
@@ -57,11 +101,15 @@ monthUp.addEventListener("click", () => {
     startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay());
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
-    monthSelect.value = `${startOfWeek.toISOString().slice(0, 10)} - ${endOfWeek.toISOString().slice(0, 10)}`;
+    monthSelect.value = `${startOfWeek.toISOString().slice(0, 10)} - ${endOfWeek
+      .toISOString()
+      .slice(0, 10)}`;
     renderWeeklyView();
   } else if (currentView === "monthly") {
     selectedDate.setMonth(selectedDate.getMonth() + 1);
-    monthSelect.value = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}`;
+    monthSelect.value = `${selectedDate.getFullYear()}-${String(
+      selectedDate.getMonth() + 1
+    ).padStart(2, "0")}`;
     renderMonthlyView();
   }
 });
@@ -77,11 +125,15 @@ monthDown.addEventListener("click", () => {
     startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay());
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
-    monthSelect.value = `${startOfWeek.toISOString().slice(0, 10)} - ${endOfWeek.toISOString().slice(0, 10)}`;
+    monthSelect.value = `${startOfWeek.toISOString().slice(0, 10)} - ${endOfWeek
+      .toISOString()
+      .slice(0, 10)}`;
     renderWeeklyView();
   } else if (currentView === "monthly") {
     selectedDate.setMonth(selectedDate.getMonth() - 1);
-    monthSelect.value = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}`;
+    monthSelect.value = `${selectedDate.getFullYear()}-${String(
+      selectedDate.getMonth() + 1
+    ).padStart(2, "0")}`;
     renderMonthlyView();
   }
 });
@@ -105,6 +157,42 @@ viewDailyButton.addEventListener("click", () => {
   renderDailyView();
 });
 
+function createCalendarTaskElement(task, timeLabel) {
+  const taskElement = document.createElement("div");
+  taskElement.classList.add("calendar-task");
+  taskElement.classList.add(task.priority);
+  taskElement.dataset.taskId = task.id;
+
+  const nameP = document.createElement("p");
+  nameP.textContent = task.name;
+
+  const timeP = document.createElement("p");
+  timeP.textContent = timeLabel;
+
+  const editBtn = document.createElement("button");
+  editBtn.classList.add("edit-task");
+  editBtn.textContent = "Edit";
+  editBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    startEditingTask(task.id);
+  });
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.classList.add("delete-task");
+  deleteBtn.textContent = "Delete";
+  deleteBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    deleteTask(task.id);
+  });
+
+  taskElement.appendChild(nameP);
+  taskElement.appendChild(timeP);
+  taskElement.appendChild(editBtn);
+  taskElement.appendChild(deleteBtn);
+
+  return taskElement;
+}
+
 function renderDailyView() {
   calendarGrid.className = "daily-view";
   calendarGrid.innerHTML = "";
@@ -120,21 +208,18 @@ function renderDailyView() {
   const tasksOnThisDay = tasks.filter((task) => {
     const taskStart = new Date(task.startTime);
     const taskEnd = new Date(task.endTime);
-
-    return (
-      taskStart <= selectedDate.setHours(23, 59, 59, 999) &&
-      taskEnd >= selectedDate.setHours(0, 0, 0, 0)
-    );
+    const dayStart = new Date(selectedDate);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(selectedDate);
+    dayEnd.setHours(23, 59, 59, 999);
+    return taskStart <= dayEnd && taskEnd >= dayStart;
   });
 
   tasksOnThisDay.forEach((task) => {
-    const taskElement = document.createElement("div");
-    taskElement.classList.add("calendar-task");
-    taskElement.classList.add(`${task.priority}`);
-    taskElement.innerHTML = `<p>${task.name}</p>
-      <p>${new Date(task.startTime).toLocaleTimeString()} - ${new Date(
+    const timeLabel = `${new Date(task.startTime).toLocaleTimeString()} - ${new Date(
       task.endTime
-    ).toLocaleTimeString()}</p>`;
+    ).toLocaleTimeString()}`;
+    const taskElement = createCalendarTaskElement(task, timeLabel);
     tasksList.appendChild(taskElement);
   });
 
@@ -166,21 +251,18 @@ function renderWeeklyView() {
     const tasksOnThisDay = tasks.filter((task) => {
       const taskStart = new Date(task.startTime);
       const taskEnd = new Date(task.endTime);
-
-      return (
-        taskStart <= currentDay.setHours(23, 59, 59, 999) &&
-        taskEnd >= currentDay.setHours(0, 0, 0, 0)
-      );
+      const dayStart = new Date(currentDay);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(currentDay);
+      dayEnd.setHours(23, 59, 59, 999);
+      return taskStart <= dayEnd && taskEnd >= dayStart;
     });
 
     tasksOnThisDay.forEach((task) => {
-      const taskElement = document.createElement("div");
-      taskElement.classList.add("calendar-task");
-      taskElement.classList.add(`${task.priority}`);
-      taskElement.innerHTML = `<p>${task.name}</p>
-        <p>${new Date(task.startTime).toLocaleTimeString()} - ${new Date(
+      const timeLabel = `${new Date(task.startTime).toLocaleTimeString()} - ${new Date(
         task.endTime
-      ).toLocaleTimeString()}</p>`;
+      ).toLocaleTimeString()}`;
+      const taskElement = createCalendarTaskElement(task, timeLabel);
       tasksList.appendChild(taskElement);
     });
 
@@ -224,21 +306,22 @@ function renderMonthlyView() {
     const tasksOnThisDay = tasks.filter((task) => {
       const taskStart = new Date(task.startTime);
       const taskEnd = new Date(task.endTime);
-
-      return (
-        taskStart <= currentDay.setHours(23, 59, 59, 999) &&
-        taskEnd >= currentDay.setHours(0, 0, 0, 0)
-      );
+      const dayStart = new Date(currentDay);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(currentDay);
+      dayEnd.setHours(23, 59, 59, 999);
+      return taskStart <= dayEnd && taskEnd >= dayStart;
     });
 
     tasksOnThisDay.forEach((task) => {
-      const taskElement = document.createElement("div");
-      taskElement.classList.add("calendar-task");
-      taskElement.classList.add(`${task.priority}`);
-      taskElement.innerHTML = `<p>${task.name}</p>
-        <p>${new Date(task.startTime).toLocaleTimeString()} - ${new Date(
-        task.endTime
-      ).toLocaleTimeString()}</p>`;
+      const start = new Date(task.startTime);
+      const end = new Date(task.endTime);
+      const timeLabel = `${String(start.getHours()).padStart(2, "0")}:${String(
+        start.getMinutes()
+      ).padStart(2, "0")}-${String(end.getHours()).padStart(2, "0")}:${String(
+        end.getMinutes()
+      ).padStart(2, "0")}`;
+      const taskElement = createCalendarTaskElement(task, timeLabel);
       tasksList.appendChild(taskElement);
     });
 
@@ -289,16 +372,14 @@ function renderCalendar() {
     });
 
     tasksOnThisDay.forEach((task) => {
-      const taskElement = document.createElement("div");
-      taskElement.classList.add("calendar-task");
-      taskElement.classList.add(`${task.priority}`);
-      taskElement.innerHTML = `<p>${task.name}</p>
-         <p>${new Date(task.startTime).getHours()}:${new Date(
-        task.startTime
-      ).getMinutes()}-${new Date(task.endTime).getHours()}:${new Date(
-        task.startTime
-      ).getMinutes()}</p>`;
-
+      const start = new Date(task.startTime);
+      const end = new Date(task.endTime);
+      const timeLabel = `${String(start.getHours()).padStart(2, "0")}:${String(
+        start.getMinutes()
+      ).padStart(2, "0")}-${String(end.getHours()).padStart(2, "0")}:${String(
+        end.getMinutes()
+      ).padStart(2, "0")}`;
+      const taskElement = createCalendarTaskElement(task, timeLabel);
       tasksList.appendChild(taskElement);
     });
 
@@ -320,13 +401,45 @@ function renderUpcoming() {
 
     const task_div = document.createElement("div");
     task_div.classList.add("task");
-    task_div.innerHTML = `
-      <h3>${task.name}</h3>
-      <p>${task.description}</p>
-      <p>Priority: ${task.priority}</p>
-      <p>Start: ${task.startTime}</p>
-      <p>End: ${task.endTime}</p>
-    `;
+    task_div.dataset.taskId = task.id;
+
+    const h3 = document.createElement("h3");
+    h3.textContent = task.name;
+
+    const pDesc = document.createElement("p");
+    pDesc.textContent = task.description;
+
+    const pPriority = document.createElement("p");
+    pPriority.textContent = `Priority: ${task.priority}`;
+
+    const pStart = document.createElement("p");
+    pStart.textContent = `Start: ${task.startTime}`;
+
+    const pEnd = document.createElement("p");
+    pEnd.textContent = `End: ${task.endTime}`;
+
+    const editBtn = document.createElement("button");
+    editBtn.classList.add("edit-task");
+    editBtn.textContent = "Edit";
+    editBtn.addEventListener("click", () => {
+      startEditingTask(task.id);
+    });
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.classList.add("delete-task");
+    deleteBtn.textContent = "Delete";
+    deleteBtn.addEventListener("click", () => {
+      deleteTask(task.id);
+    });
+
+    task_div.appendChild(h3);
+    task_div.appendChild(pDesc);
+    task_div.appendChild(pPriority);
+    task_div.appendChild(pStart);
+    task_div.appendChild(pEnd);
+    task_div.appendChild(editBtn);
+    task_div.appendChild(deleteBtn);
+
     upcoming_list.appendChild(task_div);
   });
 }
@@ -343,18 +456,27 @@ function openPopover() {
   const taskStartInput = document.getElementById("task-start");
   const taskEndInput = document.getElementById("task-end");
 
-  const now = new Date();
-  const later = new Date(now.getTime() + 60 * 60 * 1000);
+  if (!isEditing) {
+    const now = new Date();
+    const later = new Date(now.getTime() + 60 * 60 * 1000);
 
-  taskStartInput.value = now.toISOString().slice(0, 16);
-  taskEndInput.value = later.toISOString().slice(0, 16);
+    taskStartInput.value = now.toISOString().slice(0, 16);
+    taskEndInput.value = later.toISOString().slice(0, 16);
+  }
 }
 
 function closePopover() {
   popover.classList.remove("show");
+  isEditing = false;
+  editingTaskId = null;
+  task_form.reset();
 }
 
-addTaskButton.addEventListener("click", openPopover);
+addTaskButton.addEventListener("click", () => {
+  isEditing = false;
+  editingTaskId = null;
+  openPopover();
+});
 
 closeBtn.addEventListener("click", closePopover);
 window.addEventListener("click", (event) => {
@@ -372,16 +494,37 @@ task_form.addEventListener("submit", (e) => {
   const taskStartTime = document.getElementById("task-start").value;
   const taskEndTime = document.getElementById("task-end").value;
 
-  const newTask = {
-    name: taskName,
-    description: taskDescription,
-    priority: taskPriority,
-    startTime: taskStartTime,
-    endTime: taskEndTime,
-  };
+  if (isEditing && editingTaskId) {
+    const index = tasks.findIndex((t) => t.id === editingTaskId);
+    if (index !== -1) {
+      tasks[index] = {
+        ...tasks[index],
+        name: taskName,
+        description: taskDescription,
+        priority: taskPriority,
+        startTime: taskStartTime,
+        endTime: taskEndTime,
+      };
+      tasks = tasks.sort((a, b) => {
+        const dateA = new Date(a.startTime);
+        const dateB = new Date(b.startTime);
+        return dateA - dateB;
+      });
+    }
+  } else {
+    const newTask = {
+      id: generateTaskId(),
+      name: taskName,
+      description: taskDescription,
+      priority: taskPriority,
+      startTime: taskStartTime,
+      endTime: taskEndTime,
+    };
+    addTask(newTask);
+  }
 
-  addTask(newTask);
   renderUpcoming();
+  renderCalendar();
   task_form.reset();
   closePopover();
 });
@@ -463,6 +606,34 @@ function addTask(task) {
   });
   renderCalendar();
   renderUpcoming();
+}
+
+function deleteTask(taskId) {
+  openConfirm("Are you sure you want to delete this task?", taskId);
+}
+
+
+
+function startEditingTask(taskId) {
+  const task = tasks.find((t) => t.id === taskId);
+  if (!task) return;
+
+  isEditing = true;
+  editingTaskId = taskId;
+
+  const taskName = document.getElementById("task-name");
+  const taskDescription = document.getElementById("task-description");
+  const taskPriority = document.getElementById("task-priority");
+  const taskStart = document.getElementById("task-start");
+  const taskEnd = document.getElementById("task-end");
+
+  taskName.value = task.name;
+  taskDescription.value = task.description;
+  taskPriority.value = task.priority;
+  taskStart.value = task.startTime.slice(0, 16);
+  taskEnd.value = task.endTime.slice(0, 16);
+
+  openPopover();
 }
 
 let tasks = [
@@ -670,6 +841,11 @@ let tasks = [
     priority: "medium",
   },
 ];
+
+tasks = tasks.map((task) => ({
+  ...task,
+  id: task.id || generateTaskId(),
+}));
 
 let messages = [
   {
